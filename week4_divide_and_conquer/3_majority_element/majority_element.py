@@ -1,13 +1,24 @@
-def majority_element_naive(elements):
-    for e in elements:
-        if elements.count(e) > len(elements) / 2:
-            return 1
+def majority_element_boyer_moore(arr):
+    candidate = None
+    count = 0
 
-    return 0
+    for num in arr:
+        if count == 0:
+            candidate = num
+        if num == candidate:
+            count += 1
+        else:
+            count -= 1
+
+    if arr.count(candidate) > len(arr) // 2:
+        return 1
+    else:
+        return 0
 
 
-if __name__ == '__main__':
-    input_n = int(input())
-    input_elements = list(map(int, input().split()))
-    assert len(input_elements) == input_n
-    print(majority_element_naive(input_elements))
+if __name__ == "__main__":
+    n = int(input())
+    arr = list(map(int, input().split()))
+
+    result = majority_element_boyer_moore(arr)
+    print(result)
