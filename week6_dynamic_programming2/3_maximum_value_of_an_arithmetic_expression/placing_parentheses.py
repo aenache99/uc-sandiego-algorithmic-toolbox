@@ -1,7 +1,3 @@
-from typing import List
-import numpy as np
-
-
 def evaluate(a, b, op):
     if op == '+':
         return a + b
@@ -13,49 +9,44 @@ def evaluate(a, b, op):
         assert False
 
 
-def get_min_max(
-        i: int,
-        j: int,
-        min_vals: np.array,
-        max_vals: np.array,
-        operations: List[str]
-) -> (int, int):
-    min_val = np.iinfo(np.int32).max
-    max_val = np.iinfo(np.int32).min
-
-    # iterate by the last possible operation
-    for k in range(i, j):
-        a = evaluate(max_vals[i, k], max_vals[k + 1, j], operations[k])
-        b = evaluate(max_vals[i, k], min_vals[k + 1, j], operations[k])
-        c = evaluate(min_vals[i, k], max_vals[k + 1, j], operations[k])
-        d = evaluate(min_vals[i, k], min_vals[k + 1, j], operations[k])
-        min_val = min(min_val, a, b, c, d)
-        max_val = max(max_val, a, b, c, d)
-
-    return min_val, max_val
-
-
 def get_maximum_value(expression: str) -> int:
-    digits = [int(c) for i, c in enumerate(expression) if i % 2 == 0]
-    operations = [c for i, c in enumerate(expression) if i % 2 != 0]
+    n = len(expression)
+    digits = []
+    operations = []
 
-    n = len(digits)
-
-    min_vals = np.zeros((n, n), dtype=np.int)
-    max_vals = np.zeros((n, n), dtype=np.int)
-
+    # Separate digits and operations
     for i in range(n):
-        min_vals[i, i] = digits[i]
-        max_vals[i, i] = digits[i]
+        if i % 2 == 0:
+            digits.append(int(expression[i]))
+        else:
+            operations.append(expression[i])
 
-    for k in range(1, n):
-        for i in range(n - k):
-            j = k + i
-            min_vals[i, j], max_vals[i, j] = get_min_max(i, j, min_vals,
-                                                         max_vals, operations)
+    m = len(digits)
+    max_vals = [[0] * m for _ in range(m)]
+    min_vals = [[0] * m for _ in range(m)]
 
-    res = max_vals[0, n - 1]
-    return res
+    for i in range(m):
+        max_vals[i][i] = digits[i]
+        min_vals[i][i] = digits[i]
+
+    # Memoization for intermediate results
+    for s in range(1, m):
+        for i in range(m - s):
+            j = i + s
+            min_val = float('inf')
+            max_val = float('-inf')
+            for k in range(i, j):
+                op = operations[k]
+                a = evaluate(max_vals[i][k], max_vals[k + 1][j], op)
+                b = evaluate(max_vals[i][k], min_vals[k + 1][j], op)
+                c = evaluate(min_vals[i][k], max_vals[k + 1][j], op)
+                d = evaluate(min_vals[i][k], min_vals[k + 1][j], op)
+                min_val = min(min_val, a, b, c, d)
+                max_val = max(max_val, a, b, c, d)
+            min_vals[i][j] = min_val
+            max_vals[i][j] = max_val
+
+    return max_vals[0][m - 1]
 
 
 if __name__ == "__main__":
