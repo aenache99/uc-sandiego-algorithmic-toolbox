@@ -1,34 +1,36 @@
-def can_partition3(weights):
-    total_weight = sum(weights)
+def can_partition3(A):
+    total_sum = sum(A)
 
-    if total_weight % 3 != 0:
-        return False
+    # Check if the total sum is divisible by 3
+    if total_sum % 3 != 0:
+        return 0
 
-    target_sum = total_weight // 3
-    n = len(weights)
+    target_sum = total_sum // 3
+    n = len(A)
 
-    # Create a 2D array to represent whether it's possible to form partitions
-    dp = [[False] * (target_sum + 1) for _ in range(n + 1)]
+    def backtrack(index, subset_sum, subsets):
+        if index == n:
+            # Check if all subsets have reached the target sum
+            return all(subset_sum[i] == target_sum for i in range(3))
 
-    # Initialization: It's always possible to form zero partitions with a sum of zero
-    for i in range(n + 1):
-        dp[i][0] = True
+        for i in range(3):
+            if subset_sum[i] + A[index] <= target_sum:
+                subset_sum[i] += A[index]
+                subsets[index] = i
 
-    # Dynamic programming
-    for i in range(1, n + 1):
-        for j in range(1, target_sum + 1):
-            dp[i][j] = dp[i - 1][j]
-            if j >= weights[i - 1]:
-                dp[i][j] = dp[i][j] or dp[i - 1][j - weights[i - 1]]
+                if backtrack(index + 1, subset_sum, subsets):
+                    return 1
 
-    # Check if it's possible to form three partitions with a sum of target_sum
-    return dp[n][target_sum]
+                subset_sum[i] -= A[index]
+                subsets[index] = -1
+
+        return 0
+
+    subsets = [-1] * n  # Initialize subsets array
+    return backtrack(0, [0, 0, 0], subsets)
 
 
 if __name__ == '__main__':
     n = int(input())
     A = list(map(int, input().split()))
-    if can_partition3(A):
-        print(1)
-    else:
-        print(0)
+    print(can_partition3(A))
